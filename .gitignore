@@ -1,0 +1,5 @@
+*.cache
+*.o
+*.json
+*.log
+*.a
