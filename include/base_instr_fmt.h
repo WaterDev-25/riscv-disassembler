@@ -1,0 +1,46 @@
+#ifndef BASE_INSTR_FMT_H_
+    #define BASE_INSTR_FMT_H_
+
+    #include "def.h"
+    #include <stdint.h>
+
+typedef struct {
+    uint16_t _imm : 12;
+    uint8_t _rs1 : 5;
+    uint8_t _func3 : 3;
+    uint8_t _rd : 5;
+    uint8_t _opcode : 7;
+} IType, *ITypePtr;
+
+typedef struct {
+    ///! splitted imm
+    uint16_t _imm : 12;
+    uint8_t _rs2 : 5;
+    uint8_t _rs1 : 5;
+    uint8_t _func3 : 3;
+    uint8_t _opcode : 7;
+} SType, *STypePtr;
+
+typedef enum {
+    INSTR_I_TYPE,
+    INSTR_S_TYPE,
+} InstrType, *InstrTypePtr;
+
+typedef struct {
+    char *_name;
+    InstrType _type;
+    union {
+        IType _iType;
+        SType _sType;
+    } _format;
+} Instr, *InstrPtr;
+
+typedef struct InstrNode {
+    Instr _instr;
+    struct InstrNode *_next;
+} InstrNode, *InstrNodePtr, **InstrNodeDPtr;
+
+FNSTATUS AddNewInstr(InstrNodeDPtr head, Instr instr);
+FNSTATUS FreeInstrNode(InstrNodeDPtr head);
+
+#endif /* !BASE_INSTR_FMT_H_ */
