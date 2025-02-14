@@ -13,11 +13,11 @@ typedef struct {
 } IType, *ITypePtr;
 
 typedef struct {
-    ///! splitted imm
-    uint16_t _imm : 12;
+    uint8_t _imm_11_5 : 7;
     uint8_t _rs2 : 5;
     uint8_t _rs1 : 5;
     uint8_t _func3 : 3;
+    uint8_t _imm_4_0 : 5;
     uint8_t _opcode : 7;
 } SType, *STypePtr;
 
@@ -29,10 +29,10 @@ typedef enum {
 typedef struct {
     char *_name;
     InstrType _type;
-    union {
+    //union {
         IType _iType;
         SType _sType;
-    } _format;
+    //} _format;
 } Instr, *InstrPtr;
 
 typedef struct InstrNode {

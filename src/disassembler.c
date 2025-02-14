@@ -29,15 +29,30 @@ DisassemblerDisassemble(DisassemblerPtr disassemble)
         InstrNodePtr head = disassemble->_instrNode;
         while (head) {
             // I-Type encoding format check
-            if (head->_instr._format._iType._opcode == (nbr & 0x7F) &&
-                head->_instr._format._iType._func3 == ((nbr >> 12) & 0x7)) {
-                printf("== INSTRUCTION FOUND!! '%s'\n", head->_instr._name);
+            if (head->_instr._iType._opcode == (nbr & 0x7F) &&
+                head->_instr._iType._func3 == ((nbr >> 12) & 0x7)) {
+                head->_instr._iType._imm = (nbr >> 20 & 0xFFF);
+                head->_instr._iType._rs1 = (nbr >> 15) & 0x1F;
+                head->_instr._iType._rd = (nbr >> 7) & 0x1F;
+                printf("== ITYPE INSTRUCTION FOUND!! %s x%d, x%d, %d\n",
+                    head->_instr._name, head->_instr._iType._rd,
+                    head->_instr._iType._rs1,
+                    head->_instr._iType._imm);
                 break;
             }
             // S-Type encoding format check
-            if (head->_instr._format._sType._opcode == (nbr & 0x7F) &&
-                head->_instr._format._sType._func3 == ((nbr >> 12) & 0x7)) {
-                printf("== INSTRUCTION FOUND!! '%s'\n", head->_instr._name);
+            if (head->_instr._sType._opcode == (nbr & 0x7F) &&
+                head->_instr._sType._func3 == ((nbr >> 12) & 0x7)) {
+                head->_instr._sType._rs1 = (nbr >> 15) & 0x1F;
+                head->_instr._sType._rs2 = (nbr >> 20) & 0x1F;
+                head->_instr._sType._imm_11_5 = (nbr >> 25) & 0x7;
+                head->_instr._sType._imm_4_0 = (nbr >> 7) & 0x1F;
+                printf("== STYPE INSTRUCTION FOUND!! %s x%d, %d(x%d)\n",
+                    head->_instr._name,
+                    head->_instr._sType._rs2,
+                    ((head->_instr._sType._imm_11_5 << 5) |
+                    head->_instr._sType._imm_4_0),
+                    head->_instr._sType._rs1);
                 break;
             }
             head = head->_next;
@@ -55,11 +70,8 @@ RegisterRV32Instruction(DisassemblerPtr disassembler)
     Instr instr = {
         ._name = "addi",
         ._type = INSTR_I_TYPE,
-        ._format._iType = {
-            ._imm = 0x000,
-            ._rs1 = 0x00,
+        ._iType = {
             ._func3 = 0x0,
-            ._rd = 0x00,
             ._opcode = 0x13
         }
     };
@@ -68,14 +80,12 @@ RegisterRV32Instruction(DisassemblerPtr disassembler)
     Instr instr2 = {
         ._name = "sw",
         ._type = INSTR_S_TYPE,
-        ._format._sType = {
-            ._imm = 0x000,
-            ._rs2 = 0x00,
-            ._rs1 = 0x00,
+        ._sType = {
             ._func3 = 0x2,
             ._opcode = 0x23
-        }
+        },
     };
+    printf("DEBUG: %x\n", instr2._iType._opcode);
     AddNewInstr(&disassembler->_instrNode, instr2);
     return FN_SUCCESS;
 }
