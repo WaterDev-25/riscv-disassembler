@@ -21,9 +21,16 @@ typedef struct {
     uint8_t _opcode : 7;
 } SType, *STypePtr;
 
+typedef struct {
+    uint32_t _imm : 20;
+    uint8_t _rd : 4;
+    uint8_t _opcode : 7;
+} UType, *UTypePtr;
+
 typedef enum {
     INSTR_I_TYPE,
     INSTR_S_TYPE,
+    INSTR_U_TYPE
 } InstrType, *InstrTypePtr;
 
 typedef struct {
@@ -32,6 +39,7 @@ typedef struct {
     //union {
         IType _iType;
         SType _sType;
+        UType _uType;
     //} _format;
 } Instr, *InstrPtr;
 

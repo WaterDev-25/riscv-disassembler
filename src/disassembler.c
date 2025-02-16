@@ -55,6 +55,16 @@ DisassemblerDisassemble(DisassemblerPtr disassemble)
                     head->_instr._sType._rs1);
                 break;
             }
+            // U-Type encoding format check
+            if (head->_instr._uType._opcode == (nbr & 0x7F)) {
+                head->_instr._uType._imm = (nbr >> 12) & 0xFFFFF;
+                head->_instr._uType._rd = (nbr >> 7) & 0x1F;
+                printf("== UTYPE INSTRUCTION FOUND!! %s x%d, %d\n",
+                    head->_instr._name,
+                    head->_instr._uType._rd,
+                    head->_instr._uType._imm);
+                break;
+            }
             head = head->_next;
         }
         offset += 4LL;
@@ -72,7 +82,7 @@ RegisterRV32Instruction(DisassemblerPtr disassembler)
         ._type = INSTR_I_TYPE,
         ._iType = {
             ._func3 = 0x0,
-            ._opcode = 0x13
+            ._opcode = 0x13,
         }
     };
     AddNewInstr(&disassembler->_instrNode, instr);
@@ -82,11 +92,28 @@ RegisterRV32Instruction(DisassemblerPtr disassembler)
         ._type = INSTR_S_TYPE,
         ._sType = {
             ._func3 = 0x2,
-            ._opcode = 0x23
+            ._opcode = 0x23,
         },
     };
-    printf("DEBUG: %x\n", instr2._iType._opcode);
     AddNewInstr(&disassembler->_instrNode, instr2);
+    /// LUI Instruction
+    Instr instr3 = {
+        ._name = "lui",
+        ._type = INSTR_U_TYPE,
+        ._uType = {
+            ._opcode = 0x37,
+        },
+    };
+    AddNewInstr(&disassembler->_instrNode, instr3);
+    /// AUIPC Instruction
+    Instr instr4 = {
+        ._name = "auipc",
+        ._type = INSTR_U_TYPE,
+        ._uType = {
+            ._opcode = 0x17,
+        },
+    };
+    AddNewInstr(&disassembler->_instrNode, instr4);
     return FN_SUCCESS;
 }
 
