@@ -27,10 +27,20 @@ typedef struct {
     uint8_t _opcode : 7;
 } UType, *UTypePtr;
 
+typedef struct {
+    uint8_t _imm_20 : 1;
+    uint16_t _imm_10_1 : 10;
+    uint8_t _imm_1 : 1;
+    uint32_t _19_12 : 8;
+    uint8_t _rd : 4;
+    uint8_t _opcode : 7;
+} JType, *JTypePtr;
+
 typedef enum {
     INSTR_I_TYPE,
     INSTR_S_TYPE,
-    INSTR_U_TYPE
+    INSTR_U_TYPE,
+    INSTR_J_TYPE
 } InstrType, *InstrTypePtr;
 
 typedef struct {
@@ -40,6 +50,7 @@ typedef struct {
         IType _iType;
         SType _sType;
         UType _uType;
+        JType _jType;
     //} _format;
 } Instr, *InstrPtr;
 
