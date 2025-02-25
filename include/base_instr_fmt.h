@@ -30,8 +30,8 @@ typedef struct {
 typedef struct {
     uint8_t _imm_20 : 1;
     uint16_t _imm_10_1 : 10;
-    uint8_t _imm_1 : 1;
-    uint32_t _19_12 : 8;
+    uint8_t _imm_11 : 1;
+    uint32_t _imm_19_12 : 8;
     uint8_t _rd : 4;
     uint8_t _opcode : 7;
 } JType, *JTypePtr;

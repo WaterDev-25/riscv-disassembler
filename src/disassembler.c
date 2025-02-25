@@ -66,11 +66,23 @@ DisassemblerDisassemble(DisassemblerPtr disassemble)
                 break;
             }
             // J-Type encoding format check
-            // TODO: imm
             if (head->_instr._jType._opcode == (nbr & 0x7F)) {
+                head->_instr._jType._imm_19_12 = (nbr >> 12) & 0xFF;
+                head->_instr._jType._imm_11 = (nbr >> 20) & 0x1;
+                head->_instr._jType._imm_10_1 = (nbr >> 21) & 0x3FF; 
+                head->_instr._jType._imm_20 = (nbr >> 31) & 0x1;
                 head->_instr._jType._rd = (nbr >> 7) & 0x1F;
-                printf("== JTYPE INSTRUCTION FOUND!! %s x%d, 0\n",
-                    head->_instr._name, 0);
+                printf("== JTYPE INSTRUCTION FOUND!! %s x%d, %d\n",
+                    head->_instr._name,
+                    head->_instr._jType._rd,
+                    head->_instr._jType._imm_20 ? ((head->_instr._jType._imm_20 << 20) |
+                    (head->_instr._jType._imm_19_12 << 12) |
+                    (head->_instr._jType._imm_11 << 11) |
+                    (head->_instr._jType._imm_10_1 << 1)) | (int32_t)0xFFE00000 :
+                    ((head->_instr._jType._imm_20 << 20) |
+                    (head->_instr._jType._imm_19_12 << 12) |
+                    (head->_instr._jType._imm_11 << 11) |
+                    (head->_instr._jType._imm_10_1 << 1)));
             }
             head = head->_next;
         }
