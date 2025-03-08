@@ -28,6 +28,15 @@ typedef struct {
 } UType, *UTypePtr;
 
 typedef struct {
+    uint8_t _func7 : 7;
+    uint8_t _rs2 : 5;
+    uint8_t _rs1 : 5;
+    uint8_t _func3 : 3;
+    uint8_t _rd : 5;
+    uint8_t _opcode : 7;
+} RType, *RTypePtr;
+
+typedef struct {
     uint8_t _imm_20 : 1;
     uint16_t _imm_10_1 : 10;
     uint8_t _imm_11 : 1;
@@ -40,7 +49,8 @@ typedef enum {
     INSTR_I_TYPE,
     INSTR_S_TYPE,
     INSTR_U_TYPE,
-    INSTR_J_TYPE
+    INSTR_J_TYPE,
+    INSTR_R_TYPE
 } InstrType, *InstrTypePtr;
 
 typedef struct {
@@ -51,6 +61,7 @@ typedef struct {
         SType _sType;
         UType _uType;
         JType _jType;
+        RType _rType;
     //} _format;
 } Instr, *InstrPtr;
 

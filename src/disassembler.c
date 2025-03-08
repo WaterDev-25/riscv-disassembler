@@ -84,6 +84,19 @@ DisassemblerDisassemble(DisassemblerPtr disassemble)
                     (head->_instr._jType._imm_11 << 11) |
                     (head->_instr._jType._imm_10_1 << 1)));
             }
+            // R-Type encoding format check
+            if (head->_instr._rType._opcode == (nbr & 0x7F) &&
+                head->_instr._rType._func3 == ((nbr >> 12) & 0x7) &&
+                head->_instr._rType._func7 == ((nbr >> 26) & 0x7F)) {
+                head->_instr._rType._rs2 = (nbr >> 20) & 0x1F;
+                head->_instr._rType._rs1 = (nbr >> 15) & 0x1F;
+                head->_instr._rType._rd = (nbr >> 7) & 0x1F;
+                printf("== RTYPE INSTRUCTION FOUND!! %s x%d, x%d, x%d\n",
+                    head->_instr._name,
+                    head->_instr._rType._rd,
+                    head->_instr._rType._rs1,
+                    head->_instr._rType._rs2);
+            }
             head = head->_next;
         }
         offset += 4LL;
@@ -99,7 +112,9 @@ RegisterRV32Instruction(DisassemblerPtr disassembler)
         { ._name = "sw", ._type = INSTR_S_TYPE, ._sType = { ._func3 = 0x2, ._opcode = 0x23 } },
         { ._name = "lui", ._type = INSTR_U_TYPE, ._uType = { ._opcode = 0x37 } },
         { ._name = "auipc", ._type = INSTR_U_TYPE, ._uType = { ._opcode = 0x17 } },
-        { ._name = "jal", ._type = INSTR_J_TYPE, ._jType = { ._opcode = 0x6F } }
+        { ._name = "jal", ._type = INSTR_J_TYPE, ._jType = { ._opcode = 0x6F } },
+        { ._name = "jalr", ._type = INSTR_I_TYPE, ._iType = { ._opcode = 0x67 } },
+        { ._name = "add", ._type = INSTR_R_TYPE, ._rType = { ._opcode = 0x33 } }
     };
 
     for (size_t i = 0; i < sizeof(instructions) / sizeof(instructions[0]); i++)
