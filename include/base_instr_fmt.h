@@ -45,12 +45,24 @@ typedef struct {
     uint8_t _opcode : 7;
 } JType, *JTypePtr;
 
+typedef struct {
+    uint8_t _imm_12 : 1;
+    uint8_t _imm_10_5 : 6;
+    uint8_t _rs2 : 5;
+    uint8_t _rs1 : 5;
+    uint8_t _func3 : 3;
+    uint8_t _imm_4_1 : 4;
+    uint8_t _imm_11 : 1;
+    uint8_t _opcode : 7;
+} BType, *BTypePtr;
+
 typedef enum {
     INSTR_I_TYPE,
     INSTR_S_TYPE,
     INSTR_U_TYPE,
     INSTR_J_TYPE,
-    INSTR_R_TYPE
+    INSTR_R_TYPE,
+    INSTR_B_TYPE
 } InstrType, *InstrTypePtr;
 
 typedef struct {
@@ -62,6 +74,7 @@ typedef struct {
         UType _uType;
         JType _jType;
         RType _rType;
+        BType _bType;
     //} _format;
 } Instr, *InstrPtr;
 
