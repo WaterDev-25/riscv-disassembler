@@ -7,12 +7,16 @@
 static FNSTATUS
 ReadBinaryFile(BinaryReaderPtr binary)
 {
+    assert(binary != NULL);
     FILE *fp = fopen(binary->_fileName, "rb");
     size_t fz = 0L;
     size_t rz = 0L;
 
     UNUSED(fz);
-    assert(fp != NULL);
+    if (!fp) {
+        printf("-- Impossible to read the given binary.\n");
+        return FN_FAILURE;
+    }
     fseek(fp, 0L, SEEK_END);
     fz = ftell(fp);
     fseek(fp, 0L, SEEK_SET);
@@ -46,15 +50,17 @@ InitBinaryReader(char *fileName)
 
     assert(fileName != NULL && binary != NULL);
     binary->_fileName = fileName;
-    assert(ReadBinaryFile(binary) == FN_SUCCESS);
+    if (!SUCCESS(ReadBinaryFile(binary))) {
+        DestroyBinaryReader(binary);
+        return NULL;
+    }
     return binary;
 }
 
 FNSTATUS
 DestroyBinaryReader(BinaryReaderPtr binary)
 {
-    if (!binary)
-        return FN_NULL_PTR;
+    assert(binary != NULL);
     if (binary->_buffer) {
         free(binary->_buffer);
         binary->_buffer = NULL;

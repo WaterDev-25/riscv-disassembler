@@ -3,22 +3,30 @@
 #include "disassembler.h"
 #include "section_finder.h"
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-PRSTATUS
+FNSTATUS
 main(int argc, char **argv)
 {
-    UNUSED(argc);
-    UNUSED(argv);
-    BinaryReaderPtr binary = InitBinaryReader("tests/return");
-    SectionFinderPtr section = InitSectionFinder(binary);
-    DisassemblerPtr disassembler = InitDisassembler(section);
-    assert(binary && section && disassembler);
+    BinaryReaderPtr binary = NULL;
+    SectionFinderPtr section = NULL;
+    DisassemblerPtr disassembler = NULL;
 
-    FNSTATUS status = DestroyDisassembler(disassembler);
-    assert(status == FN_SUCCESS);
-    status = DestroyBinaryReader(binary);
-    assert(status == FN_SUCCESS);
-    status = DestroySectionFinder(section);
-    assert(status == FN_SUCCESS);
-    return PR_SUCCESS;
+    if (argc < 2) {
+        printf("-- Argument is missing.\n");
+        exit(1);
+    }
+    binary = InitBinaryReader(argv[1]);
+    if (!binary)
+        exit(1);
+    section = InitSectionFinder(binary);
+    if (!section)
+        exit(1);
+    disassembler = InitDisassembler(section);
+    assert(binary && section && disassembler);
+    assert(SUCCESS(DestroyDisassembler(disassembler)));
+    assert(SUCCESS(DestroyBinaryReader(binary)));
+    assert(SUCCESS(DestroySectionFinder(section)));
+    return 0x00000000;
 }

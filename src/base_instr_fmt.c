@@ -11,8 +11,7 @@ AddNewInstr(InstrNodeDPtr head, Instr instr)
 
     assert(head != NULL);
     new_node = calloc(1, sizeof(InstrNode));
-    if (!new_node)
-        return FN_NULL_PTR;
+    assert(new_node != NULL);
     new_node->_instr = instr;
     new_node->_next = *head;
     *head = new_node;

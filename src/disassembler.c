@@ -6,6 +6,164 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+
+static FNSTATUS
+HandleIType(DisassemblerPtr disassemble,
+    InstrNodePtr head,
+    uint32_t nbr,
+    uint64_t offset)
+{
+    assert(disassemble != NULL && head != NULL);
+    if (head->_instr._iType._opcode == (nbr & 0x7F) &&
+        head->_instr._iType._func3 == ((nbr >> 12) & 0x7)) {
+        head->_instr._iType._imm = (nbr >> 20 & 0xFFF);
+        head->_instr._iType._rs1 = (nbr >> 15) & 0x1F;
+        head->_instr._iType._rd = (nbr >> 7) & 0x1F;
+        printf("%#010lx\t%s x%d, x%d, %d\n",
+            disassemble->_section->_textOffset + offset,
+            head->_instr._name, head->_instr._iType._rd,
+            head->_instr._iType._rs1,
+            head->_instr._iType._imm);
+        return FN_SUCCESS;
+    }
+    return FN_FAILURE;
+}
+
+static FNSTATUS
+HandleSType(DisassemblerPtr disassemble,
+    InstrNodePtr head,
+    uint32_t nbr,
+    uint64_t offset)
+{
+    assert(disassemble != NULL && head != NULL);
+    if (head->_instr._sType._opcode == (nbr & 0x7F) &&
+        head->_instr._sType._func3 == ((nbr >> 12) & 0x7)) {
+        head->_instr._sType._rs1 = (nbr >> 15) & 0x1F;
+        head->_instr._sType._rs2 = (nbr >> 20) & 0x1F;
+        head->_instr._sType._imm_11_5 = (nbr >> 25) & 0x7;
+        head->_instr._sType._imm_4_0 = (nbr >> 7) & 0x1F;
+        printf("%#010lx\t%s x%d, %d(x%d)\n",
+            disassemble->_section->_textOffset + offset,
+            head->_instr._name,
+            head->_instr._sType._rs2,
+            ((head->_instr._sType._imm_11_5 << 5) |
+            head->_instr._sType._imm_4_0),
+            head->_instr._sType._rs1);
+        return FN_SUCCESS;
+    }
+    return FN_FAILURE;
+}
+
+static FNSTATUS
+HandleUType(DisassemblerPtr disassemble,
+    InstrNodePtr head,
+    uint32_t nbr,
+    uint64_t offset)
+{
+    assert(disassemble != NULL && head != NULL);
+    if (head->_instr._uType._opcode == (nbr & 0x7F)) {
+        head->_instr._uType._imm = (nbr >> 12) & 0xFFFFF;
+        head->_instr._uType._rd = (nbr >> 7) & 0x1F;
+        printf("%#010lx\t%s x%d, %d\n",
+            disassemble->_section->_textOffset + offset,
+            head->_instr._name,
+            head->_instr._uType._rd,
+            head->_instr._uType._imm);
+        return FN_SUCCESS;
+    }
+    return FN_FAILURE;
+}
+
+static FNSTATUS
+HandleJType(DisassemblerPtr disassemble,
+    InstrNodePtr head,
+    uint32_t nbr,
+    uint64_t offset
+)
+{
+    assert(disassemble != NULL && head != NULL);
+    if (head->_instr._jType._opcode == (nbr & 0x7F)) {
+        head->_instr._jType._imm_19_12 = (nbr >> 12) & 0xFF;
+        head->_instr._jType._imm_11 = (nbr >> 20) & 0x1;
+        head->_instr._jType._imm_10_1 = (nbr >> 21) & 0x3FF; 
+        head->_instr._jType._imm_20 = (nbr >> 31) & 0x1;
+        head->_instr._jType._rd = (nbr >> 7) & 0x1F;
+        printf("%#010lx\t%s x%d, %d\n",
+            disassemble->_section->_textOffset + offset,
+            head->_instr._name,
+            head->_instr._jType._rd,
+            head->_instr._jType._imm_20 ? ((head->_instr._jType._imm_20 << 20) |
+            (head->_instr._jType._imm_19_12 << 12) |
+            (head->_instr._jType._imm_11 << 11) |
+            (head->_instr._jType._imm_10_1 << 1)) | (int32_t)0xFFE00000 :
+            ((head->_instr._jType._imm_20 << 20) |
+            (head->_instr._jType._imm_19_12 << 12) |
+            (head->_instr._jType._imm_11 << 11) |
+            (head->_instr._jType._imm_10_1 << 1)));
+        return FN_SUCCESS;
+    }
+    return FN_FAILURE;
+}
+
+static FNSTATUS
+HandleRType(DisassemblerPtr disassemble,
+    InstrNodePtr head,
+    uint32_t nbr,
+    uint64_t offset
+)
+{
+    assert(disassemble != NULL && head != NULL);
+    if (head->_instr._rType._opcode == (nbr & 0x7F) &&
+        head->_instr._rType._func3 == ((nbr >> 12) & 0x7) &&
+        head->_instr._rType._func7 == ((nbr >> 26) & 0x7F)) {
+        head->_instr._rType._rs2 = (nbr >> 20) & 0x1F;
+        head->_instr._rType._rs1 = (nbr >> 15) & 0x1F;
+        head->_instr._rType._rd = (nbr >> 7) & 0x1F;
+        printf("%#010lx\t%s x%d, x%d, x%d\n",
+            disassemble->_section->_textOffset + offset,
+            head->_instr._name,
+            head->_instr._rType._rd,
+            head->_instr._rType._rs1,
+            head->_instr._rType._rs2);
+        return FN_SUCCESS;
+    }
+    return FN_FAILURE;
+}
+
+static FNSTATUS
+HandleBType(DisassemblerPtr disassemble,
+    InstrNodePtr head,
+    uint32_t nbr,
+    uint64_t offset
+)
+{
+    assert(disassemble != NULL && head != NULL);
+    if (head->_instr._bType._opcode == (nbr & 0x7F)) {
+        head->_instr._bType._imm_12 = (nbr >> 31) & 0x1;
+        head->_instr._bType._imm_10_5 = (nbr >> 25) & 0x3F;
+        head->_instr._bType._rs2 = (nbr >> 20) & 0x1F;
+        head->_instr._bType._rs1 = (nbr >> 15) & 0x1F;
+        head->_instr._bType._func3 = (nbr >> 12) & 0x7;
+        head->_instr._bType._imm_4_1 = (nbr >> 8) & 0xF;
+        head->_instr._bType._imm_11 = (nbr >> 7) & 0x1;
+        printf("%#010lx\t%s x%d, x%d, %d\n",
+            disassemble->_section->_textOffset + offset,
+            head->_instr._name,
+            head->_instr._bType._rs1,
+            head->_instr._bType._rs2,
+            head->_instr._bType._imm_12 ? ((head->_instr._bType._imm_12 << 12) |
+            (head->_instr._bType._imm_11 << 11) |
+            (head->_instr._bType._imm_10_5 << 5) |
+            (head->_instr._bType._imm_4_1 << 1)) | (int32_t)0xFFFFE000 :
+            ((head->_instr._bType._imm_12 << 12) |
+            (head->_instr._bType._imm_11 << 11) |
+            (head->_instr._bType._imm_10_5 << 5) |
+            (head->_instr._bType._imm_4_1 << 1)));
+        return FN_SUCCESS;
+    }
+    return FN_FAILURE;
+}
 
 static FNSTATUS
 DisassemblerDisassemble(DisassemblerPtr disassemble)
@@ -13,100 +171,25 @@ DisassemblerDisassemble(DisassemblerPtr disassemble)
     char temp[4] = {0};
     uint64_t offset = 0LL;
     uint32_t nbr = 0L;
+    InstrNodePtr head = NULL;
 
-    printf("== Text section offset: %#0lx\n", disassemble->_section->_textOffset);
-    printf("== Text section size: %#0lx\n", disassemble->_section->_textSize);
-    printf("== Entry point address: %#0lx\n", disassemble->_section->_entryPointAddr);
+    printf("-- Text section offset: %#0lx\n", disassemble->_section->_textOffset);
+    printf("-- Text section size: %#0lx\n", disassemble->_section->_textSize);
+    printf("-- Entry point address: %#0lx\n", disassemble->_section->_entryPointAddr);
     while (offset < disassemble->_section->_textSize) {
         for (size_t i = 0; i < 4; i++) {
             temp[i] = disassemble->_section->_binary->_buffer[
                 disassemble->_section->_textOffset + offset + i];
         }
         nbr = *(uint32_t *)temp;
-       // printf("%#010lx %#010x\n", disassemble->_section->_textOffset + offset, nbr);
-        InstrNodePtr head = disassemble->_instrNode;
+        head = disassemble->_instrNode;
         while (head) {
-            // I-Type encoding format check
-            if (head->_instr._iType._opcode == (nbr & 0x7F) &&
-                head->_instr._iType._func3 == ((nbr >> 12) & 0x7)) {
-                head->_instr._iType._imm = (nbr >> 20 & 0xFFF);
-                head->_instr._iType._rs1 = (nbr >> 15) & 0x1F;
-                head->_instr._iType._rd = (nbr >> 7) & 0x1F;
-                printf("%#010lx\t%s x%d, x%d, %d\n",
-                    disassemble->_section->_textOffset + offset,
-                    head->_instr._name, head->_instr._iType._rd,
-                    head->_instr._iType._rs1,
-                    head->_instr._iType._imm);
-                break;
-            }
-            // S-Type encoding format check
-            if (head->_instr._sType._opcode == (nbr & 0x7F) &&
-                head->_instr._sType._func3 == ((nbr >> 12) & 0x7)) {
-                head->_instr._sType._rs1 = (nbr >> 15) & 0x1F;
-                head->_instr._sType._rs2 = (nbr >> 20) & 0x1F;
-                head->_instr._sType._imm_11_5 = (nbr >> 25) & 0x7;
-                head->_instr._sType._imm_4_0 = (nbr >> 7) & 0x1F;
-                printf("%#010lx\t%s x%d, %d(x%d)\n",
-                    disassemble->_section->_textOffset + offset,
-                    head->_instr._name,
-                    head->_instr._sType._rs2,
-                    ((head->_instr._sType._imm_11_5 << 5) |
-                    head->_instr._sType._imm_4_0),
-                    head->_instr._sType._rs1);
-                break;
-            }
-            // U-Type encoding format check
-            if (head->_instr._uType._opcode == (nbr & 0x7F)) {
-                head->_instr._uType._imm = (nbr >> 12) & 0xFFFFF;
-                head->_instr._uType._rd = (nbr >> 7) & 0x1F;
-                printf("%#010lx\t%s x%d, %d\n",
-                    disassemble->_section->_textOffset + offset,
-                    head->_instr._name,
-                    head->_instr._uType._rd,
-                    head->_instr._uType._imm);
-                break;
-            }
-            // J-Type encoding format check
-            if (head->_instr._jType._opcode == (nbr & 0x7F)) {
-                head->_instr._jType._imm_19_12 = (nbr >> 12) & 0xFF;
-                head->_instr._jType._imm_11 = (nbr >> 20) & 0x1;
-                head->_instr._jType._imm_10_1 = (nbr >> 21) & 0x3FF; 
-                head->_instr._jType._imm_20 = (nbr >> 31) & 0x1;
-                head->_instr._jType._rd = (nbr >> 7) & 0x1F;
-                printf("%#010lx\t%s x%d, %d\n",
-                    disassemble->_section->_textOffset + offset,
-                    head->_instr._name,
-                    head->_instr._jType._rd,
-                    head->_instr._jType._imm_20 ? ((head->_instr._jType._imm_20 << 20) |
-                    (head->_instr._jType._imm_19_12 << 12) |
-                    (head->_instr._jType._imm_11 << 11) |
-                    (head->_instr._jType._imm_10_1 << 1)) | (int32_t)0xFFE00000 :
-                    ((head->_instr._jType._imm_20 << 20) |
-                    (head->_instr._jType._imm_19_12 << 12) |
-                    (head->_instr._jType._imm_11 << 11) |
-                    (head->_instr._jType._imm_10_1 << 1)));
-                break;
-            }
-            // R-Type encoding format check
-            if (head->_instr._rType._opcode == (nbr & 0x7F) &&
-                head->_instr._rType._func3 == ((nbr >> 12) & 0x7) &&
-                head->_instr._rType._func7 == ((nbr >> 26) & 0x7F)) {
-                head->_instr._rType._rs2 = (nbr >> 20) & 0x1F;
-                head->_instr._rType._rs1 = (nbr >> 15) & 0x1F;
-                head->_instr._rType._rd = (nbr >> 7) & 0x1F;
-                printf("%#010lx\t%s x%d, x%d, x%d\n",
-                    disassemble->_section->_textOffset + offset,
-                    head->_instr._name,
-                    head->_instr._rType._rd,
-                    head->_instr._rType._rs1,
-                    head->_instr._rType._rs2);
-                break;
-            }
-            // B-Type encoding format check
-            if (head->_instr._bType._opcode == (nbr & 0x7F) &&
-                head->_instr._bType._func3 == ((nbr >> 12) & 0x7)) {
-                break;
-            }
+            if (HandleIType(disassemble, head, nbr, offset)) break;
+            if (HandleSType(disassemble, head, nbr, offset)) break;
+            if (HandleUType(disassemble, head, nbr, offset)) break;
+            if (HandleJType(disassemble, head, nbr, offset)) break;
+            if (HandleRType(disassemble, head, nbr, offset)) break;
+            if (HandleBType(disassemble, head, nbr, offset)) break;
             head = head->_next;
         }
         offset += 4LL;
@@ -173,16 +256,15 @@ InitDisassembler(SectionFinderPtr section)
     disassembler->_section = section;
     disassembler->_instrNode = calloc(1, sizeof(InstrNode));
     assert(disassembler->_instrNode != NULL);
-    assert(RegisterRV32Instruction(disassembler) == FN_SUCCESS);
-    assert(DisassemblerDisassemble(disassembler) == FN_SUCCESS);
+    assert(SUCCESS(RegisterRV32Instruction(disassembler)));
+    assert(SUCCESS(DisassemblerDisassemble(disassembler)));
     return disassembler;
 }
 
 FNSTATUS
 DestroyDisassembler(DisassemblerPtr disassembler)
 {
-    if (!disassembler)
-        return FN_NULL_PTR;
+    assert(disassembler != NULL);
     if (disassembler->_instrNode) {
         FreeInstrNode(&disassembler->_instrNode);
         disassembler->_instrNode = NULL;

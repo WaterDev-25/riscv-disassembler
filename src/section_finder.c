@@ -10,26 +10,35 @@
 static FNSTATUS
 GetTextBaseAddress(SectionFinderPtr section)
 {
-    Elf32_Ehdr *ehdr = NULL;
+    char *buffer = NULL;
+    int shnum = 0;
+    int shstrndx = 0;
     Elf32_Shdr *sects = NULL;
     Elf32_Shdr *shstrsect = NULL;
     char *shstrtab = NULL;
-    int shnum = 0;
-    int shstrndx = 0;
 
-    assert(section != NULL);
-    ehdr = (Elf32_Ehdr *)section->_binary->_buffer;
-    assert(ehdr != NULL);
-    sects = (Elf32_Shdr *)(section->_binary->_buffer + ehdr->e_shoff);
-    assert(sects != NULL);
+    if (!section || !section->_binary || !section->_binary->_buffer)
+        return FN_FAILURE;
+    buffer = section->_binary->_buffer;
+    Elf32_Ehdr *ehdr = (Elf32_Ehdr *)buffer;
+    if (ehdr->e_ident[0] != 0x7f || 
+        ehdr->e_ident[1] != 'E' ||
+        ehdr->e_ident[2] != 'L' ||
+        ehdr->e_ident[3] != 'F') {
+        printf("-- The given binary is not an elf file.\n");
+        return FN_FAILURE;
+    }
+    sects = (Elf32_Shdr *)(buffer + ehdr->e_shoff);
     shnum = ehdr->e_shnum;
     shstrndx = ehdr->e_shstrndx;
+    if (shnum <= 0 || shstrndx < 0 || shstrndx >= shnum)
+        return FN_FAILURE;
     shstrsect = &sects[shstrndx];
-    assert(shstrsect != NULL);
-    shstrtab = section->_binary->_buffer + shstrsect->sh_offset;
-    assert(shstrtab != NULL);
-    for(int i = 0; i < shnum; i++) {
-        if(strcmp(shstrtab+sects[i].sh_name, ".text") == 0) {
+    shstrtab = (char *)(buffer + shstrsect->sh_offset);
+    if (!shstrtab)
+        return FN_FAILURE;
+    for (int i = 0; i < shnum; i++) {
+        if (strcmp(shstrtab + sects[i].sh_name, ".text") == 0) {
             section->_textOffset = sects[i].sh_offset;
             section->_textSize = sects[i].sh_size;
         }
@@ -41,19 +50,23 @@ GetTextBaseAddress(SectionFinderPtr section)
 SectionFinderPtr
 InitSectionFinder(BinaryReaderPtr binary)
 {
-    SectionFinderPtr section = calloc(1, sizeof(SectionFinder));
+    SectionFinderPtr section = NULL;
 
-    assert(binary && section);
+    assert(binary != NULL);
+    section = calloc(1, sizeof(SectionFinder));
+    assert(section != NULL);
     section->_binary = binary;
-    assert(GetTextBaseAddress(section) == FN_SUCCESS);
+    if (!SUCCESS(GetTextBaseAddress(section))) {
+        free(section);
+        return NULL;
+    }
     return section;
 }
 
 FNSTATUS
 DestroySectionFinder(SectionFinderPtr section)
 {
-    if (!section)
-        return FN_FAILURE;
+    assert(section != NULL);
     free(section);
     return FN_SUCCESS;
 }
