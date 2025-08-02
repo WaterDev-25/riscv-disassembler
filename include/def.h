@@ -1,13 +1,22 @@
 #ifndef DEF_H_
-    #define DEF_H_
+#define DEF_H_
 
-    #define FN_FAILURE  0x00000000
-    #define FN_SUCCESS  0x00000001
+/**
+ * Status codes for function returns
+ */
+typedef enum {
+    STATUS_FAILURE = 0,
+    STATUS_SUCCESS = 1
+} STATUS;
 
-    #define SUCCESS(v) (v == FN_SUCCESS)
+/**
+ * Check if operation was successful
+ */
+#define IS_SUCCESS(status) ((status) == STATUS_SUCCESS)
 
-    #define UNUSED(v)   (void)(v)
-
-typedef int FNSTATUS;
+/**
+ * Mark parameter as deliberately unused
+ */
+#define UNUSED(param) ((void)(param))
 
 #endif /* !DEF_H_ */

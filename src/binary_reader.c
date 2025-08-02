@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static FNSTATUS
-ReadBinaryFile(BinaryReaderPtr binary)
+static STATUS
+ReadBinaryFile( BinaryReaderPtr binary )
 {
     assert(binary != NULL);
     FILE *fp = fopen(binary->_fileName, "rb");
@@ -15,7 +15,7 @@ ReadBinaryFile(BinaryReaderPtr binary)
     UNUSED(fz);
     if (!fp) {
         printf("-- Impossible to read the given binary.\n");
-        return FN_FAILURE;
+        return STATUS_FAILURE;
     }
     fseek(fp, 0L, SEEK_END);
     fz = ftell(fp);
@@ -26,39 +26,29 @@ ReadBinaryFile(BinaryReaderPtr binary)
     if (rz != fz) {
         printf("-- Binary reader: failed to read %s.\n", binary->_fileName);
         fclose(fp);
-        return FN_FAILURE;
+        return STATUS_FAILURE;
     }
-    printf("-- Binary reader: %s successfully readed!\n", binary->_fileName);
+    printf("-- Binary reader: %s IS_SUCCESSfully readed!\n", binary->_fileName);
     fclose(fp);
-    return FN_SUCCESS;
+    return STATUS_SUCCESS;
 }
 
-/**
- * @brief Initialize new binary reader structure which contains the bytes
- * of the binary splitted in segment (.text, .data, .bss). This function
- * create an exception if the filename of the binary structure is equal to
- * NULL. Otherwise it will return the address of the new binary reader
- * structure.
- *
- * @param fileName
- * @return BinaryReaderPtr
- */
 BinaryReaderPtr
-InitBinaryReader(char *fileName)
+InitBinaryReader( const char *fileName )
 {
     BinaryReaderPtr binary = calloc(1, sizeof(BinaryReader));
 
     assert(fileName != NULL && binary != NULL);
-    binary->_fileName = fileName;
-    if (!SUCCESS(ReadBinaryFile(binary))) {
+    binary->_fileName = (char *)fileName;
+    if (!IS_SUCCESS(ReadBinaryFile(binary))) {
         DestroyBinaryReader(binary);
         return NULL;
     }
     return binary;
 }
 
-FNSTATUS
-DestroyBinaryReader(BinaryReaderPtr binary)
+STATUS
+DestroyBinaryReader( BinaryReaderPtr binary )
 {
     assert(binary != NULL);
     if (binary->_buffer) {
@@ -66,5 +56,5 @@ DestroyBinaryReader(BinaryReaderPtr binary)
         binary->_buffer = NULL;
     }
     free(binary);
-    return FN_SUCCESS;
+    return STATUS_SUCCESS;
 }

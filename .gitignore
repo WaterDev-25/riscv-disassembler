@@ -3,4 +3,4 @@
 *.json
 *.log
 *.a
-myDisassembler
+rv32i-disassembler

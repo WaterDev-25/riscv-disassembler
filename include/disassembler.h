@@ -7,10 +7,10 @@
 
 typedef struct {
     SectionFinderPtr _section;
-    InstrNodePtr _instrNode;
+    InstrNodePtr     _instrNode;
 } Disassembler, *DisassemblerPtr;
 
-DisassemblerPtr InitDisassembler(SectionFinderPtr section);
-FNSTATUS DestroyDisassembler(DisassemblerPtr disassembler);
+DisassemblerPtr InitDisassembler( SectionFinderPtr section );
+STATUS DestroyDisassembler( DisassemblerPtr disassembler );
 
 #endif /* !DISASSEMBLER_H_ */

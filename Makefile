@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -I./include -Wall -Wextra -Werror -g -fsanitize=address
 LDFLAGS = -fsanitize=address
-TARGET = myDisassembler
+TARGET = rv32i-disassembler
 SRCS := $(shell find src -name "*.c")
 HEADERS := $(shell find include -name "*.h")
 OBJS = $(SRCS:.c=.o)

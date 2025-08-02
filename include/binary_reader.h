@@ -8,7 +8,7 @@ typedef struct {
     char *_buffer;
 } BinaryReader, *BinaryReaderPtr;
 
-BinaryReader *InitBinaryReader(char *fileName);
-FNSTATUS DestroyBinaryReader(BinaryReaderPtr binary);
+BinaryReader *InitBinaryReader( const char *fileName );
+STATUS DestroyBinaryReader( BinaryReaderPtr binary );
 
 #endif /* !BINARY_READER_H_ */

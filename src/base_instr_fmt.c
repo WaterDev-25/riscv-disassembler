@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-FNSTATUS
-AddNewInstr(InstrNodeDPtr head, Instr instr)
+STATUS
+AddNewInstr( InstrNodeDPtr head, Instr instr )
 {
-    InstrNodePtr new_node = NULL; 
+    InstrNodePtr new_node = NULL;
 
     assert(head != NULL);
     new_node = calloc(1, sizeof(InstrNode));
@@ -15,11 +15,11 @@ AddNewInstr(InstrNodeDPtr head, Instr instr)
     new_node->_instr = instr;
     new_node->_next = *head;
     *head = new_node;
-    return FN_SUCCESS;
+    return STATUS_SUCCESS;
 }
 
-FNSTATUS
-FreeInstrNode(InstrNodeDPtr head)
+STATUS
+FreeInstrNode( InstrNodeDPtr head )
 {
     InstrNodePtr temp = NULL;
 
@@ -30,5 +30,5 @@ FreeInstrNode(InstrNodeDPtr head)
         *head = NULL;
         *head = temp;
     }
-    return FN_SUCCESS;
+    return STATUS_SUCCESS;
 }

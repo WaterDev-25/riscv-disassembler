@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-FNSTATUS
-main(int argc, char **argv)
+int32_t
+main( int argc, char **argv )
 {
     BinaryReaderPtr binary = NULL;
     SectionFinderPtr section = NULL;
@@ -25,8 +25,8 @@ main(int argc, char **argv)
         exit(1);
     disassembler = InitDisassembler(section);
     assert(binary && section && disassembler);
-    assert(SUCCESS(DestroyDisassembler(disassembler)));
-    assert(SUCCESS(DestroyBinaryReader(binary)));
-    assert(SUCCESS(DestroySectionFinder(section)));
+    assert(IS_SUCCESS(DestroyDisassembler(disassembler)));
+    assert(IS_SUCCESS(DestroyBinaryReader(binary)));
+    assert(IS_SUCCESS(DestroySectionFinder(section)));
     return 0x00000000;
 }
